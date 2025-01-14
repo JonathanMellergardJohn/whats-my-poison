@@ -143,8 +143,18 @@ onMounted(async () => {
           class="w-60 h-60 rounded-full object-cover border-2 shadow-2xl"
           >
       </button>
-      
+      <div 
+        v-for="ingredient in cocktailTree.ingredients" 
+        :key="index" >
+        <button 
+          @click="switchToSingleIngredientView(index)">
+          <img :src="ingredient.ingredientThumb"
+            class="w-40 h-40 rounded-full object-cover border-2 shadow-2xl"
+            >
+        </button>
+      </div>
     </div>
+    
 
     <!-- Ingredient List View -->
     <div v-else-if="currentView === 'ingredientList'" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-3xl">
@@ -185,3 +195,4 @@ onMounted(async () => {
   </div>
 
 </template>
+
