@@ -29,20 +29,20 @@ const startCocktailAppAsync = async () => {
 
 const switchToIngredientListView = () => {
   currentView.value = 'ingredientList';
-  cocktailTree.value = cocktailTree.value.ingredients;
-  console.log("in switch to ingredient List: ", cocktailTree.value);
+  //cocktailTree.value = cocktailTree.value.ingredients;
+  // console.log("in switch to ingredient List: ", cocktailTree.value);
 }
 
 const switchToSingleIngredientView = async (index) => {
   // get cocktails based on ingredient
-  let allCocktailStubs = await getCocktailsByIngredientAsync(cocktailTree.value[index].strIngredient);
+  let allCocktailStubs = await getCocktailsByIngredientAsync(cocktailTree.value.ingredients[index].strIngredient);
   let shortenedStubs = allCocktailStubs.slice(0, 5);
   let ids = shortenedStubs.map(cocktail => cocktail.idDrink);
   let cocktails = await Promise.all(
     ids.map( id => getSingleCocktailAsync(id))
   );
-  // remove other ingredients from tree and add cocktails
-  cocktailTree.value = cocktailTree.value[index];
+
+  cocktailTree.value = cocktailTree.value.ingredients[index];
   cocktailTree.value.cocktails = cocktails;
 
   currentView.value = 'ingredient'
@@ -50,13 +50,14 @@ const switchToSingleIngredientView = async (index) => {
 
 const switchToCocktailListView = () => {
   currentView.value = 'cocktailList';
-  cocktailTree.value = cocktailTree.value.cocktails;
 
-  console.log(cocktailTree.value);
 }
 
 const switchToCocktailView = async (index) => {
-  let ingredientStrings = getCocktailIngredientsArray(cocktailTree.value[index]);
+
+  console.log("Where i want to be", cocktailTree.value);
+
+  let ingredientStrings = getCocktailIngredientsArray(cocktailTree.value.cocktails[index]);
 
   const fullIngredientData = await Promise.all(
     ingredientStrings.map((ingredient) => getSingleIngredientAsync(ingredient))
@@ -64,7 +65,7 @@ const switchToCocktailView = async (index) => {
 
   fullIngredientData.forEach(data => data.ingredientThumb = `https://www.thecocktaildb.com/images/ingredients/${data.strIngredient}-Medium.png`)
 
-  cocktailTree.value = cocktailTree.value[index];
+  cocktailTree.value = cocktailTree.value.cocktails[index];
   cocktailTree.value.ingredients = fullIngredientData;
 
   currentView.value = 'cocktail';
@@ -136,63 +137,54 @@ onMounted(async () => {
   <div class="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
 
     <!-- Cocktail View -->
-    <div v-if="currentView === 'cocktail'" class="text-center space-y-4">
+    <div v-if="currentView === 'cocktail' || currentView ===  'ingredientList'" class="text-center space-y-4">
       <button 
         @click="switchToIngredientListView">
         <img :src="cocktailTree.strDrinkThumb" alt="picture of a cocktail" width="200px"
           class="w-60 h-60 rounded-full object-cover border-2 shadow-2xl"
+          :class="{ hidden : currentView === 'ingredientList' }"
           >
       </button>
       <div 
-        v-for="ingredient in cocktailTree.ingredients" 
+        v-for="(ingredient, index) in cocktailTree.ingredients" 
         :key="index" >
         <button 
           @click="switchToSingleIngredientView(index)">
           <img :src="ingredient.ingredientThumb"
             class="w-40 h-40 rounded-full object-cover border-2 shadow-2xl"
-            >
-        </button>
-      </div>
-    </div>
-    
-
-    <!-- Ingredient List View -->
-    <div v-else-if="currentView === 'ingredientList'" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-3xl">
-      <div 
-        v-for="(ingredient, index) in cocktailTree" 
-        :key="index" >
-        <button 
-          @click="switchToSingleIngredientView(index)">
-          <img :src="cocktailTree[index].ingredientThumb"
-            class="w-40 h-40 rounded-full object-cover border-2 shadow-2xl"
+            :class="{ hidden : currentView === 'cocktail' }"
             >
         </button>
       </div>
     </div>
 
-    <!-- Single Ingredient View -->
-    <div v-else-if="currentView === 'ingredient'" class="text-center space-y-4">
+    <!--  Ingredient View -->
+    <div v-else-if="currentView === 'ingredient' || currentView === 'cocktailList'" class="text-center space-y-4">
       <button 
         @click="switchToCocktailListView">
         <img :src="cocktailTree.ingredientThumb"
-        class="w-60 h-60 rounded-full object-cover border-2 shadow-2xl">
+        class="w-60 h-60 rounded-full object-cover border-2 shadow-2xl"
+        :class="{ hidden : currentView === 'cocktailList' }">       
       </button>
-    </div>
 
-    <!-- Cocktail List View -->
-    <div v-else-if="currentView === 'cocktailList'" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-3xl">
       <div 
-        v-for="(cocktail, index) in cocktailTree" 
+        v-for="(cocktail, index) in cocktailTree.cocktails" 
         :key="index">
         <button 
           @click="switchToCocktailView(index)">
-          <img :src="cocktailTree[index].strDrinkThumb"
-          class="w-40 h-40 rounded-full object-cover border-2 shadow-2xl">
+          <img :src="cocktail.strDrinkThumb"
+          class="w-40 h-40 rounded-full object-cover border-2 shadow-2xl"
+          :class="{ hidden : currentView === 'ingredient' }">
         </button>
       </div>
     </div>
-
   </div>
 
 </template>
+
+<style>
+  .hidden {
+    display: none;
+  }
+</style>
 
