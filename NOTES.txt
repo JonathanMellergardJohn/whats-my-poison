@@ -1,4 +1,4 @@
 --14 january
 
 So the app works. There are a lot of things that could be improved though.
-
+The question is if i should focus on refactoring
