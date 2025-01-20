@@ -6,13 +6,21 @@ import CanvasSegment from './components/CanvasSegment.vue';
 import Item from './components/Item.vue';
 
 const appData = ref([]);
-const clickedItem = ref(null);
+const clickedItem = ref({});
 
-const handleClick = async (item, indexOfClicked) => {
+const handleClick = async (item, segmentIndex, itemIndex) => {
 
-  if(clickedItem.value === null) {
+  let justClickedItem = { segmentIndex: segmentIndex, itemIndex: itemIndex };
 
-    clickedItem.value = indexOfClicked;
+  if(clickedItem.value.segmentIndex === justClickedItem.segmentIndex && clickedItem.value.itemIndex === justClickedItem.itemIndex) {
+      nextTick(() => {
+        const nextSeg = document.querySelectorAll('._segment')[appData.value.length - 1];
+
+        if (nextSeg) {
+          nextSeg.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+
   } else {
 
     if ("strDrink" in item ) {
@@ -21,30 +29,14 @@ const handleClick = async (item, indexOfClicked) => {
       // add ingredients to the appData
       appData.value.push(ingredients);
 
-      nextTick(() => {
-        const nextSeg = document.querySelectorAll('._segment')[appData.value.length - 1];
-
-        if (nextSeg) {
-          nextSeg.scrollIntoView({ behavior: 'smooth' });
-        }
-      });
-
-      clickedItem.value = null;
+      clickedItem.value = justClickedItem;
 
     } else if("strIngredient" in item) {
 
       let cocktails = await Data.getDrinksListAsync(item.strIngredient, 3);
       appData.value.push(cocktails);
 
-      nextTick(() => {
-        const nextSeg = document.querySelectorAll('._segment')[appData.value.length - 1];
-
-        console.log(nextSeg);
-        if (nextSeg) {
-          nextSeg.scrollIntoView({ behavior: 'smooth' });
-        }
-      });
-      clickedItem.value = null;
+      clickedItem.value = justClickedItem;
     }
   }
 }
@@ -59,13 +51,13 @@ onMounted(async () => {
 <template>
 
   <div class="_canvas">
-    <CanvasSegment v-for="list in appData">
+    <CanvasSegment v-for="(list, segmentIndex) in appData">
         <Item 
-          v-for="(item, index) in list"
-          v-show="clickedItem === null || clickedItem === index"
+          v-for="(item, itemIndex) in list"
+          v-show="clickedItem.segmentIndex === segmentIndex && clickedItem.itemIndex === itemIndex || clickedItem.segmentIndex !== segmentIndex"
           :itemObjectTree="item"
-          :key="innerIndex"
-          @click="handleClick(item, index)"></Item>
+          :key="itemIndex"
+          @click="handleClick(item, segmentIndex, itemIndex)"></Item>
     </CanvasSegment>
   </div>
 
@@ -78,4 +70,3 @@ onMounted(async () => {
   overflow: hidden;
 }
 </style>
-
