@@ -4,7 +4,8 @@ import { ref, onMounted } from 'vue';
 
 //data
 const cocktailTree = ref({});
-const currentView = ref('cocktail')
+const currentView = ref('cocktail');
+const selectedIngredientIndex = ref(null);
 
 // program flow
 
@@ -50,12 +51,9 @@ const switchToSingleIngredientView = async (index) => {
 
 const switchToCocktailListView = () => {
   currentView.value = 'cocktailList';
-
 }
 
 const switchToCocktailView = async (index) => {
-
-  console.log("Where i want to be", cocktailTree.value);
 
   let ingredientStrings = getCocktailIngredientsArray(cocktailTree.value.cocktails[index]);
 
@@ -104,11 +102,6 @@ const getCocktailsByIngredientAsync = async (ingredient) => {
 
 // helpers
 
-const preloadImage = (src) => {
-  const img = new Image();
-  img.src = src;
-};
-
 // Tree traversal
 
 const getCocktailIngredientsArray = (cocktail) => {
@@ -134,27 +127,33 @@ onMounted(async () => {
 
 
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
+
+  <div class="flex flex-col items-center justify-center bg-gray-100">
 
     <!-- Cocktail View -->
-    <div v-if="currentView === 'cocktail' || currentView ===  'ingredientList'" class="text-center space-y-4">
-      <button 
-        @click="switchToIngredientListView">
-        <img :src="cocktailTree.strDrinkThumb" alt="picture of a cocktail" width="200px"
-          class="w-60 h-60 rounded-full object-cover border-2 shadow-2xl"
-          :class="{ hidden : currentView === 'ingredientList' }"
-          >
-      </button>
-      <div 
-        v-for="(ingredient, index) in cocktailTree.ingredients" 
-        :key="index" >
+    <div v-if="currentView === 'cocktail' || currentView ===  'ingredientList'" class="text-center space-y-4 _canvas">
+      <div class="_background"
+          :class="{ '_toggle-view' : currentView === 'ingredientList'}">
+        <div  class="_top flex justify-center align-middle"
+              >
+          <button
+          @click="switchToIngredientListView">
+          <img :src="cocktailTree.strDrinkThumb" alt="picture of a cocktail" width="200px"
+            class="w-60 h-60 rounded-full object-cover border-2 shadow-2xl"
+            >
+          </button>
+        </div>
+
+      <div class="_bottom flex justify-around">
         <button 
+          v-for="(ingredient, index) in cocktailTree.ingredients"
+          :key="index"
           @click="switchToSingleIngredientView(index)">
           <img :src="ingredient.ingredientThumb"
             class="w-40 h-40 rounded-full object-cover border-2 shadow-2xl"
-            :class="{ hidden : currentView === 'cocktail' }"
             >
         </button>
+      </div>
       </div>
     </div>
 
@@ -183,8 +182,23 @@ onMounted(async () => {
 </template>
 
 <style>
-  .hidden {
-    display: none;
+  ._canvas {
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+  }
+  ._background {
+  height: 200vh;
+  transition: transform 0.75s ease;
+  }
+  ._top {
+    height: 50%;
+  }
+  ._bottom {
+    height: 50%;
+  }
+  ._toggle-view {
+    transform: translateY(-100vh);
   }
 </style>
 

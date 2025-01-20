@@ -1,77 +1,147 @@
 <script setup>
-import { ref, computed } from 'vue';
-import Cocktail from '@/components/Cocktail.vue'
 
-const currentCocktail = ref('Negroni');
-const favourites = ref(['Negroni', 'Gin & Tonic', 'Mai Tai']);
-const nonFavourites = ref(['Old Fashioned', 'Mojito']);
-const newCocktail = ref('');
+  import { ref, nextTick, onMounted } from 'vue';
+  import CanvasSegment from './components/CanvasSegment.vue';
+  import List from './components/List.vue';
+  import Item from './components/Item.vue';
+  import Api from './Api';
+  import Traversal from './Traversal';
 
-const isFavourite = computed(() => favourites.value.includes(currentCocktail.value));
-const allCocktails = computed(() => favourites.value.concat(nonFavourites.value));
+  // data for handling scrolling
+  const segColors = ref(['background-color: royalblue', 'background-color: greenyellow']);
+  const addedSegs = ref([{ id: 0, color: 'background-color: royalblue' }]);
+  let colorIndex = ref(1);
+  let inViewIndex = ref(0);
 
-const getClassForCocktail = (cocktail) =>
-  favourites.value.includes(cocktail) ? 'bg-green-100' : 'bg-gray-100';
-
-const toggleFav = () => {
-  if (favourites.value.includes(currentCocktail.value)) {
-    favourites.value = favourites.value.filter(cocktail => cocktail !== currentCocktail.value);
-    nonFavourites.value.push(currentCocktail.value);
-  } else {
-    favourites.value.push(currentCocktail.value);
-    nonFavourites.value = nonFavourites.value.filter(cocktail => cocktail !== currentCocktail.value);
-    console.log(favourites.value);
+  // other data
+  let beenClicked = ref(false);
+  let path = ref([['cocktails', null]]);
+  let clickedIndex = ref(null);
+  const itemLists = ref([]);
+  const startSeg = ref([
+    {
+      strDrink: "3-Mile Long Island Iced Tea",
+      strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/rrtssw1472668972.jpg",
+      strIngredient1: "Gin",
+      strIngredient2: "Light rum",
+      strIngredient3: "Tequila"
+    },
+    {
+      strDrink: "69 Special",
+      strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/vqyxqx1472669095.jpg",
+      strIngredient4: "Triple sec",
+      strIngredient5: "Vodka",
+      strIngredient6: "Coca-Cola"
+    },
+    {
+      strDrink: "A1",
+      strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/2x8thr1504816928.jpg",
+      strIngredient7: "Sweet and sour",
+      strIngredient8: "Bitters",
+      strIngredient9: "Lemon"
+    }
+  ]);
+  const firstIngSeg = ref([
+      {
+        strIngredient: "Gin",
+        ingredientThumb: "https://www.thecocktaildb.com/images/ingredients/gin-Medium.png"
+      },
+      {
+        strIngredient: "Light rum",
+        ingredientThumb: "https://www.thecocktaildb.com/images/ingredients/Light%20rum-Medium.png"
+      },
+      {
+        strIngredient: "Tequila",
+        ingredientThumb: "https://www.thecocktaildb.com/images/ingredients/Tequila-Medium.png"
+      }
+    ]);
+  const secondDrinksSeg = ref([
+    {
+      strDrink: "110 in the shade",
+      strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/xxyywq1454511117.jpg",
+      strIngredient1: "Gin",
+      strIngredient2: "Light rum",
+      strIngredient3: "Tequila"
+    },
+    {
+      strDrink: "Adam Bomb",
+      strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/tpxurs1454513016.jpg",
+      strIngredient4: "Triple sec",
+      strIngredient5: "Vodka",
+      strIngredient6: "Coca-Cola"
+    },
+    {
+      strDrink: "Amaretto Stone Sour Alternative",
+      strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/wutxqr1472720012.jpg",
+      strIngredient7: "Sweet and sour",
+      strIngredient8: "Bitters",
+      strIngredient9: "Lemon"
+    }
+    ])
+  
+  const handleClick = () => {
+    // As values are added to the array, the v-for loop automatically induces the app
+    // to create additional CanvasSegment components
+    addedSegs.value.push({
+      id: addedSegs.value.length,
+      color: segColors.value[colorIndex.value],
+    });
+    // change index for picking color
+    colorIndex.value = (colorIndex.value + 1) % segColors.value.length;
+    // scrolls to the next segment. Done in an imported nextTick() method to assure correct timing
+    nextTick(() => {
+      const nextSeg = document.querySelectorAll('._segment')[inViewIndex.value + 1];
+      if (nextSeg) {
+        nextSeg.scrollIntoView({ behavior: 'smooth' });
+      }
+      inViewIndex.value += 1;
+    });
   }
-};
 
-const switchCocktail = (cocktail) => {
-  currentCocktail.value = cocktail;
-}
+  const handleClickItem = (number) => {
+    let indexLastNode = path.value.length - 1;
+    let currentItemType = path.value[indexLastNode][0];
+    let clickedItem = path.value[indexLastNode][1];
 
-const addCocktail = () => {
-  nonFavourites.value.push(newCocktail.value);
-  newCocktail.value = '';
-}
+    if(clickedItem === null) {
+      path.value[indexLastNode][1] = number;
+      if(currentItemType === 'cocktails'){
+        path.value.push(['ingredients', null]);
+      } else if (currentItemType === 'ingredients'){
+        path.value.push(['cocktails', null]);
+      }
+    } else if (value === number) {
+
+    }
+  }
+  const clickHandle = () => {
+
+  }
+  onMounted( () => itemLists.value.push(startSeg.value));
 
 </script>
 
 <template>
-
-  <div class="p-6 max-w-md mx-auto bg-white shadow-lg rounded-lg">
-  
-    <Cocktail
-              :currentCocktail="currentCocktail"
-              :isFavourite="isFavourite"
-              @toggle-fav="toggleFav"></Cocktail> 
-    <h3 class="text-xl font-semibold mb-4">Cocktails:</h3>
-    <ul class="space-y-2">
-      <li
-        v-for="cocktail in allCocktails" 
-        :key="cocktail"
-        @click="switchCocktail(cocktail)"
-        class="text-xs cursor-pointer p-2 rounded-lg hover:bg-gray-200 text-gray-800"
-        :class="getClassForCocktail(cocktail)"
-        >
-        {{ cocktail }}
-      </li>
-    </ul>
-    <form @submit.prevent="addCocktail" class="mt-6">
-      <label for="newCocktail" class="block text-sm font-medium text-gray-700 mb-2">Add Cocktail:</label>
-      <div class="flex gap-2">
-        <input 
-          type="text" 
-          id="newCocktail" 
-          name="newCocktail" 
-          v-model="newCocktail" 
-          class="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Enter cocktail name">
-        <button 
-          type="submit" 
-          class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
-          Add
-        </button>
-      </div>
-    </form>
+  <div class="_canvas">
+    <CanvasSegment 
+      v-for="(list, outerIndex) in itemLists"
+      :key="outerIndex">
+      {{ console.log("value of list: ", list) }}
+      <List>
+        <Item 
+          v-for="(item, innerIndex) in list"
+          :itemObjectTree="item"
+          :key="innerIndex"
+          @click="handleClick">{{ console.log("The item: ", item) }}</Item>
+      </List>
+    </CanvasSegment>
   </div>
-
 </template>
+
+<style scoped>
+._canvas {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+</style>
