@@ -2,6 +2,7 @@
 
 import { onMounted, ref, nextTick } from 'vue';
 import Data from './Data'
+import TestComponent from './components/TestComponent.vue';
 import CanvasSegment from './components/CanvasSegment.vue';
 import Item from './components/Item.vue';
 
@@ -50,6 +51,7 @@ onMounted(async () => {
 
 <template>
 
+
   <div class="_canvas">
     <CanvasSegment v-for="(list, segmentIndex) in appData">
         <Item 
@@ -60,6 +62,7 @@ onMounted(async () => {
           @click="handleClick(item, segmentIndex, itemIndex)"></Item>
     </CanvasSegment>
   </div>
+
 
 </template>
 
