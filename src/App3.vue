@@ -56,7 +56,7 @@ onMounted(async () => {
     <CanvasSegment v-for="(list, segmentIndex) in appData">
         <Item 
           v-for="(item, itemIndex) in list"
-          v-show="clickedItem.segmentIndex === segmentIndex && clickedItem.itemIndex === itemIndex || clickedItem.segmentIndex !== segmentIndex"
+          :class="{ faded: clickedItem.segmentIndex === segmentIndex && clickedItem.itemIndex !== itemIndex }"
           :itemObjectTree="item"
           :key="itemIndex"
           @click="handleClick(item, segmentIndex, itemIndex)"></Item>
@@ -67,9 +67,13 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-._canvas {
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-}
+  ._canvas {
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+  }
+  .faded {
+    opacity: 0;
+    transition: opacity 0.3s ease; /* Smooth fading */
+  }
 </style>
